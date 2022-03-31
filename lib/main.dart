@@ -1,82 +1,112 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_complete_guide/quiz.dart';
-import 'package:flutter_complete_guide/result.dart';
-
-import 'question.dart';
-import 'answer.dart';
+import 'widgets/new_transaction.dart';
+import 'widgets/transaction_list.dart';
+import 'models/transaction.dart';
 
 void main() {
   runApp(MyApp());
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  final questions = const [
-    {
-      "questionText": "What is your favorite color?",
-      "answer": [
-        {'text': "Blue", 'score': 10},
-        {'text': "Pink", 'score': 5},
-        {'text': "Yellow", 'score': 3},
-        {'text': "Red", 'score': 1}
-      ],
-    },
-    {
-      "questionText": "What's your favorite game?",
-      "answer": [
-        {'text': "Tennis", 'score': 10},
-        {'text': "Swimming", 'score': 5},
-        {'text': "Soccer", 'score': 3},
-        {'text': "BasketBall", 'score': 1}
-      ],
-    },
-    {
-      "questionText": "Who is your favorite President?",
-      "answer": [
-        {'text': "Abacha", 'score': 10},
-        {'text': "Buhari", 'score': 5},
-        {'text': "Goodluck", 'score': 3},
-        {'text': "Obasanjo", 'score': 1}
-      ],
-    },
-  ];
-
-  var _questionIndex = 0;
-  var _totalScore = 0;
-
-  void _answerQuestion(int score) {
-    _totalScore += score;
-
-    setState(() {
-      _questionIndex++;
-    });
-    print(_questionIndex);
-  }
-
-  void _resetQuiz() {
-    setState(() {
-      _questionIndex = 0;
-      _totalScore = 0;
-    });
-  }
-
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text("My First app"),
+      title: "Personal Expenses",
+      theme: ThemeData(
+        primarySwatch: Colors.purple,
+        accentColor: Colors.amber,
+        fontFamily: "Quicksand",
+        textTheme: ThemeData.light().textTheme.copyWith(
+              headline6: TextStyle(
+                fontFamily: "OpenSans",
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+        appBarTheme: AppBarTheme(
+          titleTextStyle: TextStyle(
+            fontFamily: "OpenSans",
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        body: _questionIndex < questions.length
-            ? Quiz(
-                questions: questions,
-                questionIndex: _questionIndex,
-                answerQuestion: _answerQuestion,
-              )
-            : Result(_totalScore, _resetQuiz),
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final List<Transaction> _userTransactions = [
+    // Transaction(
+    //   id: "t1",
+    //   title: "New shows",
+    //   amount: 87.33,
+    //   date: DateTime.now(),
+    // ),
+    // Transaction(
+    //   id: "t2",
+    //   title: "New gadget",
+    //   amount: 45.19,
+    //   date: DateTime.now(),
+    // ),
+  ];
+
+  void _addNewTransaction(String txTitle, double txAmount) {
+    final newTx = Transaction(
+      id: DateTime.now().toString(),
+      title: txTitle,
+      amount: txAmount,
+      date: DateTime.now(),
+    );
+
+    setState(() {
+      _userTransactions.add(newTx);
+    });
+  }
+
+  void _startAddNewTransaction(BuildContext ctx) {
+    showModalBottomSheet(
+        context: ctx,
+        builder: (_) {
+          return NewTransaction(_addNewTransaction);
+        });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Personal Expenses"),
+        actions: [
+          IconButton(
+            onPressed: () => _startAddNewTransaction(context),
+            icon: Icon(Icons.add),
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Card(
+              color: Colors.blue,
+              child: Text("Chart"),
+            ),
+            TransactionList(_userTransactions),
+          ],
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        onPressed: () => _startAddNewTransaction(context),
       ),
     );
   }
